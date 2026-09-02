@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SANSUN学園 成績管理</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">S</span><span>SANSUN<br /><small>成績管理システム</small></span></div>
+        <nav>
+          <button class="nav-item active" data-view="grades"><span>▦</span> 成績入力・確認</button>
+          <button class="nav-item" data-view="students"><span>♙</span> 学生別成績表</button>
+          <button class="nav-item" data-view="subjects"><span>▤</span> 科目別成績表</button>
+          <button class="nav-item" data-view="settings"><span>⚙</span> 評価重み設定</button>
+        </nav>
+        <div class="sidebar-foot"><span class="avatar">山</span><span>山田 太郎<br /><small>講師</small></span><button id="sign-out" aria-label="ログアウト">⇥</button></div>
+      </aside>
+      <main>
+        <header class="topbar"><div><p class="eyebrow">2026年度 前期</p><h1 id="page-title">成績入力・確認</h1></div><div class="top-actions"><span class="save-state" id="save-state">未保存の変更はありません</span><button class="primary-btn" id="finalize-btn" hidden>成績を確定</button><button class="outline-btn" id="role-toggle">専任職員ビュー</button></div></header>
+
+        <section class="view active" id="grades-view">
+          <div class="toolbar card">
+            <label>科目<select id="subject-select"><option>Webデザイン基礎</option><option>UI/UXデザイン</option></select></label>
+            <label>学年<select><option>1年</option></select></label>
+            <div class="deadline"><span class="dot"></span>入力期限：2026年8月31日 23:59</div>
+            <button class="primary-btn" id="save-btn">下書き保存</button>
+          </div>
+          <div class="notice"><span>i</span><div><strong>評価重み</strong><span id="weight-summary">出席率 50%　授業態度 30%　提出課題 20%</span></div><button id="edit-weights">変更する</button></div>
+          <div class="section-heading"><div><h2>Webデザイン基礎</h2><p>学生ごとに評価を入力してください。すべての項目を入力すると総合評価が自動計算されます。</p></div><div class="progress"><strong id="progress-number">0 / 6</strong><span>入力完了</span><div class="progress-bar"><i id="progress-bar"></i></div></div></div>
+          <div class="table-card"><table><thead><tr><th>学籍番号</th><th>氏名</th><th>出席率 <small>0〜100%</small></th><th>授業態度 <small>1〜10</small></th><th>提出課題 <small>1〜10</small></th><th>総合点</th><th>評価</th><th>状態</th></tr></thead><tbody id="grade-rows"></tbody></table></div>
+          <p class="table-note">※ 出席率は総務部から提供された数値を入力してください。数値は保存後も入力期限内であれば変更できます。</p>
+        </section>
+
+        <section class="view" id="students-view"><div class="card empty-page"><h2>学生別成績表</h2><p>学生を選択すると、年度・学期ごとの成績を確認できます。</p><label>学生を検索<input placeholder="学籍番号または氏名" /></label><button class="primary-btn">PDFを出力</button></div></section>
+        <section class="view" id="subjects-view"><div class="card empty-page"><h2>科目別成績表</h2><p>科目・担当講師・学年・専攻で絞り込んで、成績一覧をCSVで出力できます。</p><button class="outline-btn">CSVを出力</button></div></section>
+        <section class="view" id="settings-view"><div class="card setting-page"><h2>評価重み設定</h2><p>この科目の評価に使う各項目の比率を設定します。合計が100%になるように入力してください。</p><div class="weight-form"><label>出席率 <input id="attendance-weight" type="number" min="0" max="100" value="50" /> <b>%</b></label><label>授業態度 <input id="attitude-weight" type="number" min="0" max="100" value="30" /> <b>%</b></label><label>提出課題 <input id="assignment-weight" type="number" min="0" max="100" value="20" /> <b>%</b></label></div><p class="weight-total" id="weight-total">合計 100%</p><button class="primary-btn" id="weight-save">評価重みを保存</button></div></section>
+      </main>
+    </div>
+    <dialog id="confirm-dialog"><div class="dialog-content"><span class="dialog-icon">✓</span><h2>成績を確定しますか？</h2><p>確定後は、専任職員が解除するまで成績と評価重みを編集できません。</p><div><button class="outline-btn" id="cancel-confirm">キャンセル</button><button class="primary-btn" id="confirm-grades">確定する</button></div></div></dialog>
+    <div class="toast" id="toast"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
