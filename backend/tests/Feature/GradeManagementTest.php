@@ -50,13 +50,21 @@ class GradeManagementTest extends TestCase
         $this->withHeaders($this->auth($token))->post('/api/csv/import',['type'=>'students','file'=>new \Illuminate\Http\UploadedFile($path,'students.csv','text/csv',null,true)])->assertOk();
         $subject=Subject::firstOrFail();$this->withHeaders($this->auth($token))->get("/api/reports/csv?subject_id={$subject->id}")->assertOk();$this->withHeaders($this->auth($token))->get("/api/reports/pdf?subject_id={$subject->id}")->assertOk()->assertHeader('content-type','application/pdf');
     }
-    public function test_evaluation_boundaries_and_invalid_csv_rollback():void
+    public function test_evaluation_boundaries_and_partial_csv_errors():void
     {
         $teacher=$this->login('teacher@sansun.test','Teacher123');$subject=Subject::where('code','MATH2-F')->firstOrFail();
         $this->withHeaders($this->auth($teacher))->putJson("/api/subjects/{$subject->id}/weights",['attendance_weight'=>100,'attitude_weight'=>0,'assignment_weight'=>0])->assertOk();
         $values=[59,60,69,70,80,90];$expected=['不可','可','可','良','優','秀'];$grades=Grade::where('subject_id',$subject->id)->orderBy('id')->get()->values()->map(fn($g,$i)=>['id'=>$g->id,'attendance_rate'=>$values[$i],'attitude'=>5,'assignment'=>5])->all();
         $response=$this->withHeaders($this->auth($teacher))->putJson("/api/subjects/{$subject->id}/grades",['grades'=>$grades])->assertOk();foreach($expected as $i=>$evaluation)$response->assertJsonPath("grades.{$i}.evaluation",$evaluation);
         $staff=$this->login('staff@sansun.test','Staff123');$before=\App\Models\Student::count();$path=tempnam(sys_get_temp_dir(),'invalid');file_put_contents($path,"student_number,name,course,grade_year\n20268888,正常 行,共通,1\n20268889,,共通,9\n");
-        $this->withHeaders($this->auth($staff))->post('/api/csv/import',['type'=>'students','file'=>new \Illuminate\Http\UploadedFile($path,'invalid.csv','text/csv',null,true)])->assertUnprocessable()->assertJsonStructure(['errors'=>[['line','field','reason']]]);$this->assertSame($before,\App\Models\Student::count());
+        $this->withHeaders($this->auth($staff))->post('/api/csv/import',['type'=>'students','file'=>new \Illuminate\Http\UploadedFile($path,'invalid.csv','text/csv',null,true)])->assertOk()->assertJsonPath('count',1)->assertJsonStructure(['errors'=>[['line','field','reason']]]);$this->assertSame($before+1,\App\Models\Student::count());
+    }
+
+    public function test_user_password_setup_link_enables_login():void
+    {
+        $user=User::where('email','teacher2@sansun.test')->firstOrFail();$user->forceFill(['must_set_password'=>true,'password_setup_token_hash'=>hash('sha256','setup-token'),'password_setup_expires_at'=>now()->addHour()])->save();
+        $this->postJson('/api/login',['email'=>$user->email,'password'=>'Teacher123'])->assertForbidden()->assertJsonPath('must_set_password',true);
+        $this->postJson('/api/password/setup',['email'=>$user->email,'token'=>'setup-token','password'=>'NewPass123','password_confirmation'=>'NewPass123'])->assertOk();
+        $this->postJson('/api/login',['email'=>$user->email,'password'=>'NewPass123'])->assertOk();
     }
 }
