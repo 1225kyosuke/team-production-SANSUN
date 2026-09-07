@@ -68,3 +68,18 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+[data-radix-menu-content] {
+  min-width: 220px;
+  padding: 7px;
+  border: 1px solid #dbe5ef;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 14px 35px #10284a20;
+}
+
+[data-radix-menu-label] {
+  padding: 9px 12px;
+  color: #61718a;
+  font-size: 12px;
+}

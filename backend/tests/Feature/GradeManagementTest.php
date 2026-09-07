@@ -35,7 +35,7 @@ class GradeManagementTest extends TestCase
     }
     public function test_weight_validation_grade_calculation_and_finalization_lock():void
     {
-        $teacher=$this->login('teacher@sansun.test','Teacher123');$subject=Subject::where('code','MATH2-F')->firstOrFail();
+        $teacher=$this->login('teacher@sansun.test','Teacher123');$subject=Subject::where('code','WEB201')->firstOrFail();
         $this->withHeaders($this->auth($teacher))->putJson("/api/subjects/{$subject->id}/weights",['attendance_weight'=>50,'attitude_weight'=>30,'assignment_weight'=>10])->assertUnprocessable();
         $this->withHeaders($this->auth($teacher))->putJson("/api/subjects/{$subject->id}/weights",['attendance_weight'=>50,'attitude_weight'=>25,'assignment_weight'=>25])->assertOk();
         $grades=Grade::where('subject_id',$subject->id)->get()->map(fn($g)=>['id'=>$g->id,'attendance_rate'=>90,'attitude'=>8,'assignment'=>8])->all();
@@ -52,7 +52,7 @@ class GradeManagementTest extends TestCase
     }
     public function test_evaluation_boundaries_and_partial_csv_errors():void
     {
-        $teacher=$this->login('teacher@sansun.test','Teacher123');$subject=Subject::where('code','MATH2-F')->firstOrFail();
+        $teacher=$this->login('teacher@sansun.test','Teacher123');$subject=Subject::where('code','WEB201')->firstOrFail();
         $this->withHeaders($this->auth($teacher))->putJson("/api/subjects/{$subject->id}/weights",['attendance_weight'=>100,'attitude_weight'=>0,'assignment_weight'=>0])->assertOk();
         $values=[59,60,69,70,80,90];$expected=['不可','可','可','良','優','秀'];$grades=Grade::where('subject_id',$subject->id)->orderBy('id')->get()->values()->map(fn($g,$i)=>['id'=>$g->id,'attendance_rate'=>$values[$i],'attitude'=>5,'assignment'=>5])->all();
         $response=$this->withHeaders($this->auth($teacher))->putJson("/api/subjects/{$subject->id}/grades",['grades'=>$grades])->assertOk();foreach($expected as $i=>$evaluation)$response->assertJsonPath("grades.{$i}.evaluation",$evaluation);
@@ -66,5 +66,24 @@ class GradeManagementTest extends TestCase
         $this->postJson('/api/login',['email'=>$user->email,'password'=>'Teacher123'])->assertForbidden()->assertJsonPath('must_set_password',true);
         $this->postJson('/api/password/setup',['email'=>$user->email,'token'=>'setup-token','password'=>'NewPass123','password_confirmation'=>'NewPass123'])->assertOk();
         $this->postJson('/api/login',['email'=>$user->email,'password'=>'NewPass123'])->assertOk();
+    }
+
+    public function test_subject_csv_automatically_assigns_teacher_by_normalized_name():void
+    {
+        $token=$this->login('staff@sansun.test','Staff123');
+        $teacher=User::where('email','teacher@sansun.test')->firstOrFail();
+        $path=tempnam(sys_get_temp_dir(),'subjects');
+        file_put_contents($path,"専攻,科目名,担当講師\n共通,情報リテラシー,".str_replace(' ','　',$teacher->name)."\n");
+        $this->withHeaders($this->auth($token))->post('/api/csv/import',['type'=>'subjects','year'=>2026,'file'=>new \Illuminate\Http\UploadedFile($path,'科目一覧.csv','text/csv',null,true)])->assertOk()->assertJsonPath('count',1);
+        $this->assertSame($teacher->id,Subject::where('name','情報リテラシー')->value('teacher_id'));
+    }
+
+    public function test_csv_imported_user_can_login_with_initial_password():void
+    {
+        $token=$this->login('staff@sansun.test','Staff123');
+        $path=tempnam(sys_get_temp_dir(),'users');
+        file_put_contents($path,"氏名,メールアドレス\nCSV 講師,csv-teacher@example.com\n");
+        $this->withHeaders($this->auth($token))->post('/api/csv/import',['type'=>'users','role'=>'teacher','file'=>new \Illuminate\Http\UploadedFile($path,'講師名簿.csv','text/csv',null,true)])->assertOk()->assertJsonPath('count',1);
+        $this->postJson('/api/login',['email'=>'csv-teacher@example.com','password'=>'Password123'])->assertOk()->assertJsonPath('user.role','teacher');
     }
 }

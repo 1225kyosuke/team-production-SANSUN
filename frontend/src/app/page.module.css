@@ -15,5 +15,12 @@
 .settingsGrid>section:first-child .listRow .textButton{display:none}
 .roleChoice{margin:0 0 20px;padding:16px;border:1px solid #dbe5ef;border-radius:10px;background:#f7fafc}.roleChoice p{margin:0 0 10px;font-size:13px;font-weight:700;color:#263958}.roleChoice>div{display:grid;grid-template-columns:1fr 1fr;gap:10px}.roleChoice button{height:44px;border:1px solid #b9c8d9;border-radius:8px;background:#fff;color:#253a58;font:inherit;font-weight:700;cursor:pointer}.roleChoice .roleActive{border-color:#107C41;background:#eaf6ee;color:#107C41;box-shadow:0 0 0 1px #107C41}
 .logoutItem{color:#b42318!important;border-radius:8px;margin:4px;padding:10px 12px;font-weight:700;transition:background .15s,color .15s}.logoutItem svg{color:#b42318;width:17px;height:17px}.logoutItem:hover,.logoutItem:focus{background:#fff1f0!important;color:#9f1d17!important}.accountTrigger{border-radius:12px;transition:background .15s,box-shadow .15s}.accountTrigger:hover{background:#f5f8fc;box-shadow:0 2px 8px #20385812}
-:global([data-radix-menu-content]){min-width:220px;padding:7px;border:1px solid #dbe5ef;border-radius:12px;background:#fff;box-shadow:0 14px 35px #10284a20}
-:global([data-radix-menu-label]){padding:9px 12px;color:#61718a;font-size:12px}
+.assignmentModal{width:min(760px,calc(100vw - 40px))}.assignmentTools{display:flex;align-items:center;gap:10px;margin:12px 0}.assignmentTools input{flex:1;min-width:180px}.assignmentTools .secondary{height:44px;white-space:nowrap}.assignmentCount{font-size:13px;font-weight:700;color:#107C41}.studentPicker{border:1px solid #dbe5ef;border-radius:10px;max-height:360px;overflow:auto}.studentPicker label{display:flex;align-items:center;gap:12px;margin:0;padding:12px 15px;border-bottom:1px solid #e8edf3;cursor:pointer}.studentPicker label:last-child{border-bottom:0}.studentPicker label:hover,.studentPicker .studentSelected{background:#f0f8f3}.studentPicker input{width:18px;height:18px;accent-color:#107C41}.studentPicker span{display:block}.studentPicker strong,.studentPicker small{display:block}.studentPicker small{margin-top:3px;color:#6b788d;font-weight:400}
+@media(max-width:720px){.assignmentTools{align-items:stretch;flex-direction:column}.assignmentTools input,.assignmentTools button{width:100%}}
+.assignmentModal>.csvActions{display:flex;flex-wrap:nowrap;justify-content:flex-end;align-items:center}.assignmentModal>.csvActions .secondary,.assignmentModal>.csvActions .primary{width:auto;min-width:160px;margin:0}
+@media(max-width:520px){.assignmentModal>.csvActions{flex-direction:row}.assignmentModal>.csvActions .secondary,.assignmentModal>.csvActions .primary{min-width:0;flex:1;padding:0 12px}}
+.nav:empty{display:none}
+.weightEditor .weightValid{color:#16825d}
+.weightEditor .weightInvalid{color:#d92d20}
+.weightEditor .weightInvalid small{font-size:12px}
+.weightEditor button:disabled{background:#aab4c3;cursor:not-allowed;opacity:.7}

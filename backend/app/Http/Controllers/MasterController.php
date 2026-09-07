@@ -16,7 +16,7 @@ use App\Services\PasswordLinkService;
 class MasterController extends Controller
 {
     public function dashboard(Request $request):JsonResponse{$subjects=Subject::with('teacher')->when($request->user()->role==='teacher',fn($q)=>$q->where('teacher_id',$request->user()->id))->get();return response()->json(['students'=>Student::count(),'teachers'=>User::where('role','teacher')->count(),'subjects'=>$subjects->count(),'completed'=>$subjects->where('is_finalized',true)->count(),'recent_subjects'=>$subjects->values()]);}
-    public function index(Request $request,string $type):JsonResponse{$this->staffOnly($request);return response()->json(match($type){'students'=>Student::orderBy('student_number')->get(),'users'=>User::orderBy('role')->orderBy('name')->get(),'subjects'=>Subject::with('teacher')->orderByDesc('year')->get(),default=>abort(404)});}
+    public function index(Request $request,string $type):JsonResponse{$this->staffOnly($request);return response()->json(match($type){'students'=>Student::orderBy('student_number')->get(),'users'=>User::orderBy('role')->orderBy('name')->get(),'subjects'=>Subject::with(['teacher','students:id'])->orderByDesc('year')->get(),default=>abort(404)});}
     public function store(Request $request,string $type, PasswordLinkService $links):JsonResponse
     {
         $this->staffOnly($request);$record=match($type){
